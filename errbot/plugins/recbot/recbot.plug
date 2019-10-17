@@ -1,0 +1,9 @@
+[Core]
+Name = Recbot
+Module = recbot
+
+[Documentation]
+Description = 
+
+[Python]
+Version = 3.7+

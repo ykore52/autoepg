@@ -66,13 +66,25 @@ def set_to_redis(epg_array, ch, name):
                 if not 'start' in prog or not 'end' in prog:
                     raise Exception('EPG が不完全')
 
-                prog_seliarized = json.dump(prog)
-                pk = 'program:{}:{}'.format(ch, prog['start'][0:-3])
+                prog_serialized = json.dump(prog)
 
-                redis_client.set(pk, prog_seliarized)
+                pk = 'autoepg:program:{}:{}'.format(ch, prog['start'][0:-3])
+                redis_client.set(pk, prog_serialized)
+
+                title_key = 'autoepg:title:{}:{}'.format(ch, prog['title'])
+                redis_client.set(title_key, pk)
+
+                detail_key = 'autoepg:detail:{}:{}'.format(ch, prog['detail'])
+                redis_client.set(detail_key, pk)
+
+                category_key = 'autoepg:category:{}:{}'.format(ch, prog['category'])
+                redis_client.set(category_key, pk)
 
                 # キーの有効期限を放送終了時間に設定
                 redis_client.expireat(pk, int(prog['end'][0:-3]))
+                redis_client.expireat(title_key, int(prog['end'][0:-3]))
+                redis_client.expireat(detail_key, int(prog['end'][0:-3]))
+                redis_client.expireat(category_key, int(prog['end'][0:-3]))
 
             except Exception as exception:
                 is_succeeded = False
