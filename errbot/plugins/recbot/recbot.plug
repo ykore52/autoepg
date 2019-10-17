@@ -6,4 +6,4 @@ Module = recbot
 Description = 
 
 [Python]
-Version = 3.7+
+Version = 3

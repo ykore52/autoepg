@@ -64,13 +64,15 @@ class Recbot(BotPlugin):
             ret = '検索結果: {} 件ヒットしました.\n'.format(len(keys))
             for i, key in enumerate(keys):
                 if i > 0:
-                    ret += '------\n'
+                    ret += '------------------------\n'
                 r = json.loads(redis_client.get(redis_client.get(key)))
+                return ret
                 dts = datetime.datetime.fromtimestamp(int(r['start']/1000))
                 dte = datetime.datetime.fromtimestamp(int(r['end']/1000))
 
                 ret += '放送日時: {} ～ {}\n'.format(dts.strftime('%m-%d %H:%M'), dte.strftime('%m-%d %H:%M'))
                 ret += 'タイトル: {}\n'.format(r['title'])
+                ret += 'カテゴリ: {}\n'.format(r['category'])
                 ret += '説明: {}\n'.format(r['detail'])
             return ret
 
@@ -83,13 +85,14 @@ class Recbot(BotPlugin):
                 ret = '検索結果: {} 件ヒットしました.\n'.format(len(keys))
                 for i, key in enumerate(keys):
                     if i > 0:
-                        ret += '------\n'
+                        ret += '------------------------\n'
                     r = json.loads(redis_client.get(redis_client.get(key)))
                     dts = datetime.datetime.fromtimestamp(int(r['start']/1000))
                     dte = datetime.datetime.fromtimestamp(int(r['end']/1000))
 
                     ret += '放送日時: {} ～ {}\n'.format(dts.strftime('%m-%d %H:%M'), dte.strftime('%m-%d %H:%M'))
                     ret += 'タイトル: {}\n'.format(r['title'])
+                    ret += 'カテゴリ: {}\n'.format(r['category'])
                     ret += '説明: {}\n'.format(r['detail'])
                 return ret
 
@@ -100,13 +103,14 @@ class Recbot(BotPlugin):
                 ret = '検索結果: {} 件ヒットしました.\n'.format(len(keys))
                 for i, key in enumerate(keys):
                     if i > 0:
-                        ret += '------\n'
+                        ret += '------------------------\n'
                     r = json.loads(redis_client.get(redis_client.get(key)))
                     dts = datetime.datetime.fromtimestamp(int(r['start']/1000))
                     dte = datetime.datetime.fromtimestamp(int(r['end']/1000))
 
                     ret += '放送日時: {} ～ {}\n'.format(dts.strftime('%m-%d %H:%M'), dte.strftime('%m-%d %H:%M'))
                     ret += 'タイトル: {}\n'.format(r['title'])
+                    ret += 'カテゴリ: {}\n'.format(r['category'])
                     ret += '説明: {}\n'.format(r['detail'])
                 return ret
 
@@ -117,13 +121,14 @@ class Recbot(BotPlugin):
                 ret = '検索結果: {} 件ヒットしました.\n'.format(len(keys))
                 for i, key in enumerate(keys):
                     if i > 0:
-                        ret += '------\n'
+                        ret += '------------------------\n'
                     r = json.loads(redis_client.get(redis_client.get(key)))
                     dts = datetime.datetime.fromtimestamp(int(r['start']/1000))
                     dte = datetime.datetime.fromtimestamp(int(r['end']/1000))
 
                     ret += '放送日時: {} ～ {}\n'.format(dts.strftime('%m-%d %H:%M'), dte.strftime('%m-%d %H:%M'))
                     ret += 'タイトル: {}\n'.format(r['title'])
+                    ret += 'カテゴリ: {}\n'.format(r['category'])
                     ret += '説明: {}\n'.format(r['detail'])
                 return ret
 
