@@ -8,6 +8,7 @@ import os
 import subprocess
 import json
 import redis
+import requests
 import slack
 
 # EPG取得に使用する TS の一時保存先
@@ -20,6 +21,13 @@ CHANNEL_FILE = 'channels.json'
 
 REDIS_SERVER = 'localhost'
 REDIS_PORT = 6379
+
+SLACK_SUPPORT = True if os.environ['SLACK_WEBHOOK_URL'] else False
+SLACK_WEBHOOK_URL = os.environ['SLACK_WEBHOOK_URL']
+
+def slack_post(text):
+    if SLACK_SUPPORT:
+        requests.post(SLACK_WEBHOOK_URL, params={'text': text})
 
 try:
     redis_client = redis.Redis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
@@ -51,7 +59,7 @@ def set_to_redis(epg_array, ch, name):
     '''
     EPG をシリアライズして Redis に保存する
     '''
-
+    is_succeeded = True
     for epg in epg_array:
         for prog in epg.programs:
             try:
@@ -67,7 +75,8 @@ def set_to_redis(epg_array, ch, name):
                 redis_client.expireat(pk, int(prog['end'][0:-3]))
 
             except Exception as exception:
-                pass
+                is_succeeded = False
+    return is_succeeded
 
 
 def autoepg():
@@ -76,14 +85,24 @@ def autoepg():
     取得できなかったチャンネルは更新しない.
     '''
 
-    with open(CHANNEL_FILE) as fp:
-        channels = json.load(fp)
-        for ch, name in channels.items():
-            epg = get_epg_data(ch, name)
-            if epg is None:
-                continue
-            
-            set_to_redis(epg, ch, name)
+    try:
+        is_succeeded = True
+        with open(CHANNEL_FILE) as fp:
+            channels = json.load(fp)
+            for ch, name in channels.items():
+                epg = get_epg_data(ch, name)
+                if epg is None:
+                    continue
+                
+                if not set_to_redis(epg, ch, name):
+                    is_succeeded = False
+        
+        if not is_succeeded:
+            raise Exception
+
+        slack_post('EPG の取得が完了しました。')
+    except:
+        slack_post('EPG の取得に失敗しました。')
 
 
 if __name__ == "__main__":
