@@ -138,11 +138,7 @@ class Recbot(BotPlugin):
         return self.usage()
     
     @botcmd
-    def recbot_se(self, msg, args)
-        return self.recbot_search(msg, args)
-
-    @botcmd
-    def recbot_sea(self, msg, args)
+    def recbot_searc(self, msg, args)
         return self.recbot_search(msg, args)
 
     @botcmd
@@ -150,9 +146,14 @@ class Recbot(BotPlugin):
         return self.recbot_search(msg, args)
 
     @botcmd
-    def recbot_searc(self, msg, args)
+    def recbot_sea(self, msg, args)
         return self.recbot_search(msg, args)
 
+    @botcmd
+    def recbot_se(self, msg, args)
+        return self.recbot_search(msg, args)
+    
+    
     @botcmd 
     def recbot_show(self, msg, args):
         args = args.split(' ')
@@ -170,12 +171,13 @@ class Recbot(BotPlugin):
         return ret
     
     @botcmd
-    def recbot_sh(self, msg, args):
+    def recbot_sho(self, msg, args):
         return self.recbot_show(msg, args)
     
     @botcmd
-    def recbot_sho(self, msg, args):
+    def recbot_sh(self, msg, args):
         return self.recbot_show(msg, args)
+    
     
     @botcmd
     def recbot_delete(self, msg, args):
@@ -193,16 +195,21 @@ class Recbot(BotPlugin):
                 return e
 
     @botcmd
-    def recbot_del(self, msg, args):
+    def recbot_delet(self, msg, args):
         return self.recbot_delete(msg, args)
-
+    
     @botcmd
     def recbot_dele(self, msg, args):
         return self.recbot_delete(msg, args)
-
+        
     @botcmd
-    def recbot_delet(self, msg, args):
+    def recbot_del(self, msg, args):
         return self.recbot_delete(msg, args)
+    
+    @botcmd
+    def recbot_de(self, msg, args):
+        return self.recbot_delete(msg, args)
+
 
     @botcmd
     def recbot_add(self, msg, args):
@@ -285,5 +292,18 @@ class Recbot(BotPlugin):
         return 'EPG データ即時更新を予約しました.'
     
     @botcmd
+    def recbot_updat(self, msg, args):
+        return self.recbot_update(msg, args)
+    
+    @botcmd
+    def recbot_upda(self, msg, args):
+        return self.recbot_update(msg, args)
+    
+    @botcmd
     def recbot_upd(self, msg, args):
         return self.recbot_update(msg, args)
+    
+    @botcmd
+    def recbot_up(self, msg, args):
+        return self.recbot_update(msg, args)
+    
