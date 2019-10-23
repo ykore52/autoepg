@@ -12,6 +12,7 @@
 | `autoepg:category:large:{category}` | String | 番組情報へのキー | 検索用キー:カテゴリ(大分類) |
 | `autoepg:category:middle:{category}` | String | 番組情報へのキー | 検索用キー:カテゴリ(小分類) |
 | `autoepg:record:queue` | List | 録画キュー | |
+| `autoepg:storage` | List | TS保存先一覧 | |
 
 ### Redisキーの有効期限
 

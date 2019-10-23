@@ -307,3 +307,31 @@ class Recbot(BotPlugin):
     def recbot_up(self, msg, args):
         return self.recbot_update(msg, args)
     
+
+    @botcmd
+    def recbot_storage(self, msg, args):
+        ls = redis_client.lrange('autoepg:storage', 0, -1)
+        response = 'TS 保存先:'
+        for i, path in enumerate(ls):
+            response += '{}. "{}"\n'.format(i+1, path)
+        return response
+
+    @botcmd
+    def recbot_storag(self, msg, args):
+        return self.recbot_storage(msg, args)
+
+    @botcmd
+    def recbot_stora(self, msg, args):
+        return self.recbot_storage(msg, args)
+
+    @botcmd
+    def recbot_stor(self, msg, args):
+        return self.recbot_storage(msg, args)
+
+    @botcmd
+    def recbot_sto(self, msg, args):
+        return self.recbot_storage(msg, args)
+
+    @botcmd
+    def recbot_st(self, msg, args):
+        return self.recbot_storage(msg, args)
