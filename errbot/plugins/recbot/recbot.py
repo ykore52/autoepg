@@ -273,7 +273,7 @@ class Recbot(BotPlugin):
             rec_dir = self._select_storage()
             if rec_dir is None:
                 return '選択できるストレージがありません.'
-            ts_fullpath = os.path.join(rec_dir, '{}-{}.ts'.format(dt.strftime('%Y%m%d%H%M'), str(ch)))
+            ts_fullpath = os.path.join(rec_dir, 'record-{}-{}.ts'.format(dt.strftime('%Y%m%d%H%M'), str(ch)))
 
             cmd = 'echo "sleep {}; recpt1 --b25 --strip {} {} {}" '.format(sleep_sec, str(ch), str(duration - REC_END_OFFSET_SEC), ts_fullpath) +
                 '| at {0:2d}:{0:2d}'.format(dt.hour(), dt.minute()) +
