@@ -47,29 +47,29 @@ class Recbot(BotPlugin):
         return '''
         機能:
         * 番組情報の検索
-            !search 鉄腕ＤＡＳＨ         (基本)
-            !search /title 鉄腕ＤＡＳＨ
-            !search /detail 鉄腕ＤＡＳＨ
-            !search /category バラエティ
+            !recbot search 鉄腕ＤＡＳＨ         (基本)
+            !recbot search /title 鉄腕ＤＡＳＨ
+            !recbot search /detail 鉄腕ＤＡＳＨ
+            !recbot search /category バラエティ
         * 録画キューの表示
-            !recq show
+            !recbot show
         * 録画キューの登録
             * 開始時間のみが指定された場合は、番組表に番組が存在した場合のみキュー登録
             * 年指定は省略可(次年1月も省略OK)
-            !recq add 23 [2019/]10/17 1:00 [60]
+            !recbot add 23 [2019/]10/17 1:00 [60]
         * 録画キューの削除
-            !recq delete 1
+            !recbot delete 1
         * EPG データの更新
-            !recq update
+            !recbot update
         * 録画キューの自動録画登録(未実装)
-            !recq autoadd 鉄腕ＤＡＳＨ
-            !recq autoadd /title 鉄腕ＤＡＳＨ
-            !recq autoadd /category バラエティ
+            !recbot autoadd 鉄腕ＤＡＳＨ
+            !recbot autoadd /title 鉄腕ＤＡＳＨ
+            !recbot autoadd /category バラエティ
         * 放送局コード表
                 {}
         '''.format(json.dump(channels))
     
-    def search_response(self, keys):
+    def recbot_search_response(self, keys):
         '''
         Errbot が返す文面を作成する
         '''
@@ -86,11 +86,11 @@ class Recbot(BotPlugin):
             ret += '{}\n'.format(r['detail'])
         return ret
     
-    def recq_delete_response(self):
+    def recbot_delete_response(self):
         return subprocess.run('at -l', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout
 
     @botcmd
-    def search(self, msg, args):
+    def recbot_search(self, msg, args):
         args = args.split(' ')
         if len(args) == 0:
 
@@ -104,7 +104,7 @@ class Recbot(BotPlugin):
             for key in redis_client.keys('autoepg:detail:*{}*'.format(args[0])):
                 keys.add(redis_client.get(key))
             
-            return self.search_response(keys)
+            return self.recbot_search_response(keys)
 
         elif len(args) >= 2:
 
@@ -114,7 +114,7 @@ class Recbot(BotPlugin):
                 for key in redis_client.keys('autoepg:title:*{}*'.format(args[0])):
                     keys.add(redis_client.get(key))
 
-                return self.search_response(keys)
+                return self.recbot_search_response(keys)
 
             elif args[1] == '/detail':
 
@@ -122,7 +122,7 @@ class Recbot(BotPlugin):
                 for key in redis_client.keys('autoepg:detail:*{}*'.format(args[0])):
                     keys.add(redis_client.get(key))
 
-                return self.search_response(keys)
+                return self.recbot_search_response(keys)
 
             elif args[1] == '/category':
 
@@ -130,15 +130,31 @@ class Recbot(BotPlugin):
                 for key in redis_client.keys('autoepg:category:*{}*'.format(args[0])):
                     keys.add(redis_client.get(key))
 
-                return self.search_response(keys)
+                return self.recbot_search_response(keys)
 
             else:
                 return self.usage()
 
         return self.usage()
+    
+    @botcmd
+    def recbot_se(self, msg, args)
+        return self.recbot_search(msg, args)
+
+    @botcmd
+    def recbot_sea(self, msg, args)
+        return self.recbot_search(msg, args)
+
+    @botcmd
+    def recbot_sear(self, msg, args)
+        return self.recbot_search(msg, args)
+
+    @botcmd
+    def recbot_searc(self, msg, args)
+        return self.recbot_search(msg, args)
 
     @botcmd 
-    def recq_show(self, msg, args):
+    def recbot_show(self, msg, args):
         args = args.split(' ')
 
         ret = '録画キューを表示します.\n'
@@ -154,22 +170,18 @@ class Recbot(BotPlugin):
         return ret
     
     @botcmd
-    def recq_s(self, msg, args):
-        return self.recq_show(msg, args)
-
-    @botcmd
-    def recq_sh(self, msg, args):
-        return self.recq_show(msg, args)
+    def recbot_sh(self, msg, args):
+        return self.recbot_show(msg, args)
     
     @botcmd
-    def recq_sho(self, msg, args):
-        return self.recq_show(msg, args)
+    def recbot_sho(self, msg, args):
+        return self.recbot_show(msg, args)
     
     @botcmd
-    def recq_delete(self, msg, args):
+    def recbot_delete(self, msg, args):
         args = args.split(' ')
         if len(args) == 0:
-            return self.recq_delete_response()
+            return self.recbot_delete_response()
         elif len(args) == 1:
             try:
                 cmd = 'atrm {}'.format(args[0])
@@ -181,27 +193,19 @@ class Recbot(BotPlugin):
                 return e
 
     @botcmd
-    def recq_d(self, msg, args):
-        return self.recq_delete(msg, args)
+    def recbot_del(self, msg, args):
+        return self.recbot_delete(msg, args)
 
     @botcmd
-    def recq_de(self, msg, args):
-        return self.recq_delete(msg, args)
+    def recbot_dele(self, msg, args):
+        return self.recbot_delete(msg, args)
 
     @botcmd
-    def recq_del(self, msg, args):
-        return self.recq_delete(msg, args)
+    def recbot_delet(self, msg, args):
+        return self.recbot_delete(msg, args)
 
     @botcmd
-    def recq_dele(self, msg, args):
-        return self.recq_delete(msg, args)
-
-    @botcmd
-    def recq_delet(self, msg, args):
-        return self.recq_delete(msg, args)
-
-    @botcmd
-    def recq_add(self, msg, args):
+    def recbot_add(self, msg, args):
         args = args.split(' ')
         try:
             if len(args) != 3 and len(args) != 4:
@@ -263,7 +267,7 @@ class Recbot(BotPlugin):
             if ret.returncode != 0:
                 return 'コマンド実行に失敗しました. {}'.format(cmd)
 
-            m = re.search('^job ([0-9]+) at .*?', ret.stdout, re.MULTILINE)
+            m = re.recbot_search('^job ([0-9]+) at .*?', ret.stdout, re.MULTILINE)
             if m is None:
                 raise 'at コマンドの実行に失敗'
             return '録画予約しました.\n' +
@@ -273,9 +277,13 @@ class Recbot(BotPlugin):
             return e
 
     @botcmd
-    def recq_update(self, msg, args):
+    def recbot_update(self, msg, args):
         cmd = 'echo "{} {}" | at now'.format(PYTHON_CMD, AUTOEPG_PATH)
         ret = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         if ret.returncode != 0:
             return 'コマンド実行に失敗しました. {}'.format(cmd)
         return 'EPG データ即時更新を予約しました.'
+    
+    @botcmd
+    def recbot_upd(self, msg, args):
+        return self.recbot_update(msg, args)
