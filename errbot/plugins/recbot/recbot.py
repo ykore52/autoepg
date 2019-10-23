@@ -274,9 +274,9 @@ class Recbot(BotPlugin):
             if ret.returncode != 0:
                 return 'コマンド実行に失敗しました. {}'.format(cmd)
 
-            m = re.recbot_search('^job ([0-9]+) at .*?', ret.stdout, re.MULTILINE)
-            if m is None:
+            if re.search('^job ([0-9]+) at .*?', ret.stdout, re.MULTILINE) is None:
                 raise 'at コマンドの実行に失敗'
+            
             return '録画予約しました.\n' +
                     '{}'.format(subprocess.run('at -l', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT))
 
