@@ -328,8 +328,7 @@ class Recbot(BotPlugin):
         elif len(args) >= 2:
             if args[1] == 'add':
                 return self.recbot_storage_add(msg, args[1:])
-        else:
-            return self.usage()
+        return self.usage()
 
     @botcmd
     def recbot_storag(self, msg, args):
