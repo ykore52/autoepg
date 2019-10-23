@@ -13,7 +13,7 @@ import slack
 import traceback
 
 # EPG取得に使用する TS の一時保存先
-TEMP_DIR = '/tmp'
+TEMP_DIR = '/var/cache/errbot'
 TEMP_FILE = 'temp.ts'
 
 REC_SECONDS = 10
@@ -56,17 +56,17 @@ def get_epg_data(ch, name):
         cmd = 'recpt1 --b25 --strip {} {} {}'.format(ch, REC_SECONDS, os.path.join(TEMP_DIR, TEMP_FILE))
         res_recpt1 = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         if res_recpt1.returncode != 0:
-            raise 'recpt1 の実行に失敗'
+            raise Exception('recpt1 の実行に失敗: {}'.format(cmd))
 
         cmd = 'epgdump json {} -'.format(os.path.join(TEMP_DIR, TEMP_FILE))
         res_epgdump = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        if res_epgdump != 0:
-            raise 'epgdump の実行に失敗'
+        if res_epgdump.returncode != 0:
+            raise Exception('epgdump の実行に失敗: {}'.format(cmd))
 
         cmd = 'rm -f {}'.format(os.path.join(TEMP_DIR, TEMP_FILE))
         res_rm = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         if res_rm.returncode != 0:
-            raise 'ファイル削除に失敗'
+            raise Exception('ファイル削除に失敗: {}'.format(cmd))
 
         print('{}(ch={}) の EPGデータ取得完了。'.format(name, ch))
         return json.loads(res_epgdump.stdout.decode('utf-8'))

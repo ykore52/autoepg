@@ -17,8 +17,8 @@ REDIS_PORT = 6379
 
 REC_DIR = '/tmp'
 
-PYTHON_CMD = 'python3'
-AUTOEPG_PATH = '/opt/autoepg/autoepg.py'
+PYTHON_CMD = '/usr/bin/python3'
+AUTOEPG_PATH = '/home/ykore52/autoepg/autoepg.py'
 
 # 放送開始時間の N秒前に録画を開始する
 REC_START_OFFSET_SEC = 15
@@ -138,19 +138,19 @@ class Recbot(BotPlugin):
         return self.usage()
     
     @botcmd
-    def recbot_searc(self, msg, args)
+    def recbot_searc(self, msg, args):
         return self.recbot_search(msg, args)
 
     @botcmd
-    def recbot_sear(self, msg, args)
+    def recbot_sear(self, msg, args):
         return self.recbot_search(msg, args)
 
     @botcmd
-    def recbot_sea(self, msg, args)
+    def recbot_sea(self, msg, args):
         return self.recbot_search(msg, args)
 
     @botcmd
-    def recbot_se(self, msg, args)
+    def recbot_se(self, msg, args):
         return self.recbot_search(msg, args)
     
     
@@ -275,9 +275,7 @@ class Recbot(BotPlugin):
                 return '選択できるストレージがありません.'
             ts_fullpath = os.path.join(rec_dir, 'record-{}-{}.ts'.format(dt.strftime('%Y%m%d%H%M'), str(ch)))
 
-            cmd = 'echo "sleep {}; recpt1 --b25 --strip {} {} {}" '.format(sleep_sec, str(ch), str(duration - REC_END_OFFSET_SEC), ts_fullpath) +
-                '| at {0:2d}:{0:2d}'.format(dt.hour(), dt.minute()) +
-                ' {0:2d}{0:2d}{0:4d}'.format(dt.day(), dt.month(), dt.year())
+            cmd = 'echo "sleep {}; recpt1 --b25 --strip {} {} {}" | at {0:2d}:{0:2d} {0:2d}{0:2d}{0:4d}'.format(sleep_sec, str(ch), str(duration - REC_END_OFFSET_SEC), ts_fullpath, dt.hour(), dt.minute(), dt.day(), dt.month(), dt.year())
             ret = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             if ret.returncode != 0:
                 return 'コマンド実行に失敗しました. {}'.format(cmd)
@@ -285,8 +283,7 @@ class Recbot(BotPlugin):
             if re.search('^job ([0-9]+) at .*?', ret.stdout, re.MULTILINE) is None:
                 raise 'at コマンドの実行に失敗'
             
-            return '録画予約しました.\n' +
-                    '{}'.format(subprocess.run('at -l', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT))
+            return '録画予約しました.\n{}'.format(subprocess.run('at -l', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT))
 
         except Exception as e:
             return e
@@ -297,7 +294,7 @@ class Recbot(BotPlugin):
         ret = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         if ret.returncode != 0:
             return 'コマンド実行に失敗しました. {}'.format(cmd)
-        return 'EPG データ即時更新を予約しました.'
+        return 'EPG データ即時更新を予約しました: {}'.format(cmd)
     
     @botcmd
     def recbot_updat(self, msg, args):
