@@ -81,33 +81,35 @@ def set_to_redis(epg_array, ch, name):
     '''
     EPG をシリアライズして Redis に保存する
     '''
-    print('EPG データを Redis に保存')
     is_succeeded = True
     for epg in epg_array:
         for prog in epg['programs']:
             try:
                 prog_serialized = json.dumps(prog)
-                pk = 'autoepg:program:{}:{}'.format(ch, int(prog['start']/1000))
+                prog_start = int(prog['start']/1000)
+                prog_end = int(prog['end']/1000)
+
+                pk = 'autoepg:program:{}:{}'.format(ch, prog_start)
                 redis_client.set(pk, prog_serialized)
 
-                title_key = 'autoepg:title:{}:{}:{}'.format(ch, int(prog['start']/1000), prog['title'])
+                title_key = 'autoepg:title:{}:{}:{}'.format(ch, prog_start, prog['title'])
                 redis_client.set(title_key, pk)
 
                 detail_key = 'autoepg:detail:{}:{}'.format(ch, prog['detail'])
                 redis_client.set(detail_key, pk)
 
                 for cat in prog['category']:
-                    category_large_key = 'autoepg:category:large:{}:{}:{}'.format(ch, int(prog['start']/1000), cat['large']['ja_JP'])
+                    category_large_key = 'autoepg:category:large:{}:{}:{}'.format(ch, prog_start, cat['large']['ja_JP'])
                     redis_client.set(category_large_key, pk)
-                    category_middle_key = 'autoepg:category:middle:{}:{}:{}'.format(ch, int(prog['start']/1000), cat['middle']['ja_JP'])
+                    category_middle_key = 'autoepg:category:middle:{}:{}:{}'.format(ch, prog_start, cat['middle']['ja_JP'])
                     redis_client.set(category_middle_key, pk)
 
                 # キーの有効期限を放送終了時間に設定
-                redis_client.expireat(pk, int(prog['end']/1000))
-                redis_client.expireat(title_key, int(prog['end']/1000))
-                redis_client.expireat(detail_key, int(prog['end']/1000))
-                redis_client.expireat(category_large_key, int(prog['end']/1000))
-                redis_client.expireat(category_middle_key, int(prog['end']/1000))
+                redis_client.expireat(pk, prog_end)
+                redis_client.expireat(title_key, prog_end)
+                redis_client.expireat(detail_key, prog_end)
+                redis_client.expireat(category_large_key, prog_end)
+                redis_client.expireat(category_middle_key, prog_end)
 
             except Exception as exception:
                 print(exception)
