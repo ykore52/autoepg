@@ -1,5 +1,7 @@
 # autoepg について
 
+実装途中 Work in progress
+
 ## Redis キー一覧
 
 | Key Name | Type | Value | Description |
