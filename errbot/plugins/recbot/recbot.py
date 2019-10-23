@@ -213,6 +213,9 @@ class Recbot(BotPlugin):
 
     @botcmd
     def recbot_add(self, msg, args):
+        if not self._check_storage_at_least_one():
+            return '保存先ストレージを少なくとも1つ追加してください.'
+
         args = args.split(' ')
         try:
             if len(args) != 3 and len(args) != 4:
@@ -267,7 +270,12 @@ class Recbot(BotPlugin):
                 sleep_sec = REC_START_OFFSET_SEC
 
 
-            cmd = 'echo "sleep {}; recpt1 --b25 --strip {} {} {}" '.format(sleep_sec, str(ch), str(duration - REC_END_OFFSET_SEC), os.path.join(REC_DIR, '')) +
+            rec_dir = self._select_storage()
+            if rec_dir is None:
+                return '選択できるストレージがありません.'
+            ts_fullpath = os.path.join(rec_dir, '{}-{}.ts'.format(dt.strftime('%Y%m%d%H%M'), str(ch)))
+
+            cmd = 'echo "sleep {}; recpt1 --b25 --strip {} {} {}" '.format(sleep_sec, str(ch), str(duration - REC_END_OFFSET_SEC), ts_fullpath) +
                 '| at {0:2d}:{0:2d}'.format(dt.hour(), dt.minute()) +
                 ' {0:2d}{0:2d}{0:4d}'.format(dt.day(), dt.month(), dt.year())
             ret = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -310,11 +318,18 @@ class Recbot(BotPlugin):
 
     @botcmd
     def recbot_storage(self, msg, args):
-        ls = redis_client.lrange('autoepg:storage', 0, -1)
-        response = 'TS 保存先:'
-        for i, path in enumerate(ls):
-            response += '{}. "{}"\n'.format(i+1, path)
-        return response
+        args = args.split(' ')
+        if len(args) == 0:
+            ls = redis_client.lrange('autoepg:storage', 0, -1)
+            response = 'TS 保存先を表示します.\n'
+            for i, path in enumerate(ls):
+                response += '{}. {}\n'.format(i+1, path)
+            return response
+        elif len(args) >= 2:
+            if args[1] == 'add':
+                return self.recbot_storage_add(msg, args[1:])
+        else:
+            return self.usage()
 
     @botcmd
     def recbot_storag(self, msg, args):
@@ -335,3 +350,40 @@ class Recbot(BotPlugin):
     @botcmd
     def recbot_st(self, msg, args):
         return self.recbot_storage(msg, args)
+
+
+    def recbot_storage_add(self, msg, args):
+        if len(args) != 1:
+            return 'パラメータが不正です.'
+        try:
+            redis_client.rpush(os.path.normpath(args[1]))
+            return '保存先一覧へ追加しました.'
+        except:
+            return 'Redis への書き込みに失敗.'
+    
+
+    def _check_storage_at_least_one(self):
+        try:
+            ls = redis_client.lrange('autoepg:storage', 0, -1)
+            if len(ls) == 0:
+                return False
+            return True
+        except:
+            return False
+    
+    def _check_storage_capacity(self, path):
+        try:
+            import shutil
+            if shutil.disk_usage(path).used / shutil.disk_usage(path).total >= 0.95: # disk limit の数値は適当
+                return False
+            return True
+        except:
+            return False
+
+    def _select_storage(self):
+        ls = redis_client.lrange('autoepg:storage', 0, -1)
+        for path in ls:
+            if not self._check_storage_capacity(path):
+                continue
+            return path
+        return None
