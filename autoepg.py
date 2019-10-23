@@ -23,18 +23,27 @@ CHANNEL_FILE = 'channels.json'
 REDIS_SERVER = 'localhost'
 REDIS_PORT = 6379
 
-SLACK_SUPPORT = True if os.environ['SLACK_WEBHOOK_URL'] else False
-SLACK_WEBHOOK_URL = os.environ['SLACK_WEBHOOK_URL']
-
-def slack_post(text):
-    if SLACK_SUPPORT:
-        requests.post(SLACK_WEBHOOK_URL, params={'text': text})
+if 'SLACK_WEBHOOK_URL' in os.environ:
+    SLACK_SUPPORT = True
+    SLACK_WEBHOOK_URL = os.environ['SLACK_WEBHOOK_URL']
+    print('Enable Slack support: DISABLED')
+else:
+    SLACK_SUPPORT = False
+    SLACK_WEBHOOK_URL = ''
+    print('Enable Slack support: ENABLED')
 
 try:
     redis_client = redis.Redis(host=REDIS_SERVER, port=REDIS_PORT, db=0)
 except:
     print('Cannot connect to the Redis service. host={}:{}'.format(REDIS_SERVER, REDIS_PORT))
     exit(1)
+
+def slack_post(text):
+    if SLACK_SUPPORT:
+        requests.post(SLACK_WEBHOOK_URL, params={'text': text})
+    else:
+        print(text)
+
 
 def get_epg_data(ch, name):
     '''
@@ -44,12 +53,23 @@ def get_epg_data(ch, name):
     print('{}(ch={}) の EPGデータを取得します。'.format(name, ch))
 
     try:
-        subprocess.run(['recpt1', '--b25', '--strip', str(ch), str(REC_SECONDS), os.path.join(TEMP_DIR, TEMP_FILE)], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        res = subprocess.run(['epgdump', 'json', os.path.join(TEMP_DIR, TEMP_FILE), '-'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        subprocess.run(['rm', '-f', os.path.join(TEMP_DIR, TEMP_FILE)])
+        cmd = 'recpt1 --b25 --strip {} {} {}'.format(ch, REC_SECONDS, os.path.join(TEMP_DIR, TEMP_FILE))
+        res_recpt1 = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        if res_recpt1.returncode != 0:
+            raise 'recpt1 の実行に失敗'
+
+        cmd = 'epgdump json {} -'.format(os.path.join(TEMP_DIR, TEMP_FILE))
+        res_epgdump = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        if res_epgdump != 0:
+            raise 'epgdump の実行に失敗'
+
+        cmd = 'rm -f {}'.format(os.path.join(TEMP_DIR, TEMP_FILE))
+        res_rm = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        if res_rm.returncode != 0:
+            raise 'ファイル削除に失敗'
 
         print('{}(ch={}) の EPGデータ取得完了。'.format(name, ch))
-        return json.loads(res.stdout.decode('utf-8'))
+        return json.loads(res_epgdump.stdout.decode('utf-8'))
         
     except Exception as exception:
         print('{}(ch={}) の EPGデータ取得でエラー発生。'.format(name, ch))
@@ -66,9 +86,6 @@ def set_to_redis(epg_array, ch, name):
     for epg in epg_array:
         for prog in epg['programs']:
             try:
-                if not 'start' in prog or not 'end' in prog:
-                    raise Exception('EPG が不完全')
-
                 prog_serialized = json.dumps(prog)
                 pk = 'autoepg:program:{}:{}'.format(ch, int(prog['start']/1000))
                 redis_client.set(pk, prog_serialized)
