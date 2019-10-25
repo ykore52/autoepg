@@ -82,8 +82,8 @@ class Recbot(BotPlugin):
             dte = datetime.datetime.fromtimestamp(int(prog['end']/1000))
 
             ret += '{} - {}\n'.format(dts.strftime('%m/%d %H:%M'), dte.strftime('%H:%M'))
-            ret += '{}\n'.format(r['title'])
-            ret += '{}\n'.format(r['detail'])
+            ret += '{}\n'.format(prog['title'])
+            ret += '{}\n'.format(prog['detail'])
         return ret
     
     def recbot_delete_response(self):
